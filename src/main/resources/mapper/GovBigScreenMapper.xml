@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.enesource.jump.web.dao.IGovBigScreen">
+	<select id="findGovStatisticsData" resultType="map">
+		SELECT 
+		m.society_consume_act societyConsumeAct, 
+		m.society_consume_tag societyConsumeTag, 
+		m.society_power_act societyPowerAct,
+		m.society_power_tag societyPowerTag, 
+		m.society_water_act societyWaterAct,
+		m.society_water_tag societyWaterTag, 
+		m.society_carbon_act societyCarbonAct, 
+		m.society_carbon_tag societyCarbonTag, 
+		m.gae_rate_act gaeRateAct, 
+		m.gae_rate_tag gaeRateTag, 
+		m.clean_rate_act cleanRateAct, 
+		m.clean_rate_tag cleanRateTag,
+		m.society_consume_rate societyConsumeRate, 
+		m.society_power_rate societyPowerRate, 
+		m.society_water_rate societyWaterRate, 
+		m.society_carbon_rate societyCarbonRate,
+		m.gae_rate_rate gaeRateRate, 
+		m.clean_rate_rate cleanRateRate,
+		m.photovo_sum photovoSum,
+		m.battery_sum batterySum,
+		m.charge_sum chargeSum,
+		m.waterPower_sum waterPowerSum,
+		m.garbagePower_sum garbagePowerSum,
+		m.substation_sum substationSum,
+		m.ent_sum entSum,
+		m.society_industry_act societyIndustryAct,
+		m.society_industry_tag societyIndustryTag,
+		ifnull(m.fuhe_max,0) fuheMax,
+		ifnull(m.fuhe_avg,0) fuheAvg,
+		ifnull(m.area_contract,0) areaContract,
+		ifnull(m.capacity_proportion,0) capacityProportion
+		from t_statisticaldata m
+		where m.areaLabel = #{areaLabel}
+		order by m.date desc limit 1
+    </select>
+    
+    <select id="findGovCountStatisticsData" resultType="map">
+    	SELECT 
+		(SELECT COUNT(1) from t_governmentmapdata where siteType =2 and photo_number != '' and photo_number is not null
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>
+		) photovoCount,
+		(SELECT COUNT(1) from t_governmentmapdata where siteType =6 
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) batteryCount,
+		(SELECT COUNT(1) from t_governmentmapdata where siteType =7
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) chargeCount,
+    	(SELECT COUNT(1) from t_governmentmapdata where siteType =8
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) waterCount,
+    	(SELECT COUNT(1) from t_governmentmapdata where siteType =9
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) garbageCount,
+		(SELECT COUNT(1) from t_governmentmapdata where siteType =10
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) substationCount,
+		(SELECT COUNT(1) from t_enterpriseinfo where 1=1
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) entCount
+		FROM dual
+    </select>
+    
+    
+    <update id="updateGovCountStatisticsData" parameterType="map" >
+    	update t_statisticaldata
+    	set date = '2019-01-01'
+    	<if test="societyConsumeAct != null">
+		    , society_consume_act = #{societyConsumeAct}
+		</if>
+		<if test="societyConsumeTag != null">
+		    , society_consume_tag = #{societyConsumeTag}
+		</if>
+		<if test="societyPowerAct != null">
+		    , society_power_act = #{societyPowerAct}
+		</if>
+		<if test="societyPowerTag != null">
+		    , society_power_tag = #{societyPowerTag}
+		</if>
+		<if test="societyWaterAct != null">
+		    , society_water_act = #{societyWaterAct}
+		</if>
+		<if test="societyWaterTag != null">
+		    , society_water_tag = #{societyWaterTag}
+		</if>
+		<if test="societyCarbonAct != null">
+		    , society_carbon_act = #{societyCarbonAct}
+		</if>
+		<if test="societyCarbonTag != null">
+		    , society_carbon_tag = #{societyCarbonTag}
+		</if>
+		<if test="gaeRateAct != null">
+		    , gae_rate_act = #{gaeRateAct}
+		</if>
+		<if test="gaeRateTag != null">
+		    , gae_rate_tag = #{gaeRateTag}
+		</if>
+		<if test="cleanRateAct != null">
+		    , clean_rate_act = #{cleanRateAct}
+		</if>
+		<if test="cleanRateTag != null">
+		    , clean_rate_tag = #{cleanRateTag}
+		</if>
+		<if test="photovoSum != null">
+		    , photovo_sum = #{photovoSum}
+		</if>
+		<if test="batterySum != null">
+		    , battery_sum = #{batterySum}
+		</if>
+		<if test="chargeSum != null">
+		    , charge_sum = #{chargeSum}
+		</if>
+		<if test="waterPowerSum != null">
+		    , waterPower_sum = #{waterPowerSum}
+		</if>
+		<if test="garbagePowerSum != null">
+		    , garbagePower_sum = #{garbagePowerSum}
+		</if>
+		<if test="substationSum != null">
+		    , substation_sum = #{substationSum}
+		</if>
+		<if test="entSum != null">
+		    , ent_sum = #{entSum}
+		</if>
+		<if test="societyIndustryAct != null">
+		    , society_industry_act = #{societyIndustryAct}
+		</if>
+		<if test="societyIndustryTag != null">
+		    , society_industry_tag = #{societyIndustryTag}
+		</if>
+		<if test="fuheMax != null">
+			, fuhe_max = #{fuheMax}
+		</if>
+		<if test="fuheAvg != null">
+			, fuhe_avg = #{fuheAvg}
+		</if>
+		<if test="areaContract != null">
+			, area_contract = #{areaContract}
+		</if>
+		<if test="capacityProportion != null">
+			, capacity_proportion = #{capacityProportion}
+		</if>
+		where areaLabel = #{areaLabel}
+    </update>
+    
+    <select id="findGovMapData" parameterType="map" resultType="map">
+    	SELECT m.siteType, ifnull(m.siteName, '') siteName, ifnull(m.siteId, '') siteId, ifnull(m.lng, '') lng, ifnull(m.lat, '') lat, m.address, 
+    	ifnull(voltlevel, '') voltlevel, ifnull(changePowerSum, '') changePowerSum, ifnull(capacity, '') capacity, ifnull(commissionTime, '') commissionTime,ifnull(consNo, '') consNo, 
+    	ifnull(declared_ent, '') declaredEnt, ifnull(photo_number, '') photoNumber, ifnull(investor, '') investor, ifnull(ongrid_date, '') ongridDate, ifnull(chargeType, '') chargeType, 
+    	ifnull(chargeCountSum, '') chargeCountSum, ifnull(changePowerSum, '') changePowerSum, ifnull(login_userName, '') loginUserName, ifnull(login_password, '') loginPassword, ifnull(capacity_proportion, '') capacityProportion
+    	FROM t_governmentmapdata m where m.siteType in (6,7,8,9,10,11) 
+    	<if test="areaLabel != 'wenzhou'">
+    		and m.areaLabel = #{areaLabel}
+    	</if>
+    	<if test="siteType != null">
+		    and m.siteType = #{siteType}
+		</if>
+    	UNION ALL
+    	SELECT m.siteType, ifnull(m.siteName, '') siteName, ifnull(m.siteId, '') siteId, ifnull(m.lng, '') lng, ifnull(m.lat, '') lat, m.address, 
+    	ifnull(voltlevel, '') voltlevel, ifnull(changePowerSum, '') changePowerSum, ifnull(capacity, '') capacity, ifnull(commissionTime, '') commissionTime,ifnull(consNo, '') consNo, 
+    	ifnull(declared_ent, '') declaredEnt, ifnull(photo_number, '') photoNumber, ifnull(investor, '') investor, ifnull(ongrid_date, '') ongridDate, ifnull(chargeType, '') chargeType, 
+    	ifnull(chargeCountSum, '') chargeCountSum, ifnull(changePowerSum, '') changePowerSum, '' loginUserName, '' loginPassword,'' capacityProportion
+    	FROM t_governmentmapdata m where m.siteType = 2 and m.photo_number != '' and m.photo_number is not null
+    	<if test="areaLabel != 'wenzhou'">
+    		and m.areaLabel = #{areaLabel}
+    	</if>
+    	<if test="siteType != null">
+		    and m.siteType = #{siteType}
+		</if>
+    </select>
+    
+    
+    <select id="getGovDetail" parameterType="map" resultType="map">
+    	SELECT siteType, siteName, ifnull(lng, '') lng, ifnull(lat, ''), ifnull(xAxis, '') xAxis, ifnull(yAxis, '') yAxis, ifnull(address, '') address, 
+    	ifnull(chargeCountSum, '') chargeCountSum, ifnull(changePowerSum, '') changePowerSum, ifnull(batteryCapacity, '') batteryCapacity, ifnull(strategy, '') strategy, 
+    	ifnull(dayCharge, '') dayCharge, ifnull(dayDischarge, '') dayDischarge, ifnull(chargeSum, '') chargeSum, ifnull(dischargeSum, '') dischargeSum, ifnull(commissionTime, '') commissionTime,
+    	ifnull(capacity, '') capacity,  ifnull(powerGeneration, '') powerGeneration, ifnull(powerSupply, '') powerSupply, ifnull(todayPowerGeneration, '') todayPowerGeneration
+    	FROM t_governmentmapdata m where m.siteId = #{siteId}
+    </select>
+    
+    <select id="getGovList" parameterType="map" resultType="map">
+    	SELECT siteName
+    	FROM t_governmentmapdata m where m.siteName like concat('%',#{key}, '%') and m.areaLabel = #{areaLabel} 	
+    </select>
+    
+    <select id="siteIdCurve" parameterType="map" resultType="map">
+    	SELECT value, date FROM t_governmentmap_detail m where m.siteId = #{siteId} and DATE_FORMAT(m.date,'%Y-%m') >= DATE_FORMAT(date_sub(now(), interval 24 month),'%Y-%m')
+    </select>
+    
+    <select id="getParkAddress" parameterType="map" resultType="map">
+    	SELECT aa.entName, aa.orgCode, aa.lng, aa.lat, aa.companyId, aa.value, IFNULL(POWER(ROUND(aa.value,3), 0.25), 0) logValue from
+		(SELECT entName
+			  , orgCode
+			  , lng
+			  , lat
+			  , company_id companyId,
+			IFNULL((SELECT ROUND(SUM(ABS(aa.value)),3)
+			          from t_ent_energyinfo_comp_sum aa
+			         where aa.date = #{date}
+			          and aa.energyType = 0
+			          and aa.company_id = t.company_id ), 0) value
+		 from t_enterpriseinfo t
+		 	where 1=1
+			) aa
+			where 1=1
+			<if test="key !=null and key !=''">
+				and aa.entName like concat('%', #{key}, '%')
+			</if>
+    </select>
+    
+    <select id="getParkAddressRate" parameterType="map" resultType="map">
+		SELECT ROUND(currvalue, 2) currvalue,
+		ROUND(case when currvalue = 0 THEN 0 ELSE (kk.currvalue - kk.lastMonthValue)/kk.lastMonthValue * 100 END, 2) monthRate, 
+		ROUND(case when currvalue = 0 THEN 0 ELSE (kk.currvalue - kk.lastYearValue)/kk.lastYearValue * 100 END, 2) yearRate,
+		(select COUNT(1) from t_enterpriseinfo where 1=1
+		<if test="areaLabel != 'wenzhou'">
+		and areaLabel = #{areaLabel}
+		</if>
+		) entNUm
+		from 
+		(
+		SELECT 
+		(SELECT IFNULL(SUM(e.`value`),0) FROM t_ent_energyinfo_comp_sum e, t_enterpriseinfo t where t.company_id = e.company_id and e.energyType = '0' and e.date = CONCAT(DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 MONTH),'%Y-%m'), '-01 00:00:00')
+		<if test="areaLabel != 'wenzhou'">
+		and areaLabel = #{areaLabel}
+		</if>
+		) currvalue,
+		(SELECT IFNULL(SUM(e.`value`),0) FROM t_ent_energyinfo_comp_sum e, t_enterpriseinfo t where t.company_id = e.company_id and e.energyType = '0' and e.date = CONCAT(DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 2 MONTH),'%Y-%m'), '-01 00:00:00')
+		<if test="areaLabel != 'wenzhou'">
+		and areaLabel = #{areaLabel}
+		</if>
+		) lastMonthValue,
+		(SELECT IFNULL(SUM(e.`value`),0) FROM t_ent_energyinfo_comp_sum e, t_enterpriseinfo t where t.company_id = e.company_id and e.energyType = '0' and e.date = CONCAT(DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 13 MONTH),'%Y-%m'), '-01 00:00:00')
+		<if test="areaLabel != 'wenzhou'">
+		and areaLabel = #{areaLabel}
+		</if>
+		) lastYearValue
+		from dual
+		)kk
+    </select>
+    
+    <select id="getParkAddressSum" parameterType="map" resultType="map">
+    	SELECT entName, orgCode, lng, lat, company_id companyId,   
+    	IFNULL((SELECT ROUND(SUM(aa.value),3) from t_ent_energyinfo_comp_sum aa where DATE_FORMAT(aa.date, '%Y-%m') = #{date} and aa.energyType = 0 and aa.company_id = t.company_id ), 0) value,
+    	IFNULL((SELECT POWER(ROUND(SUM(ABS(aa.value)),3), 0.25) from t_ent_energyinfo_comp_sum aa where DATE_FORMAT(aa.date, '%Y-%m') = #{date} and aa.energyType = 0 and aa.company_id = t.company_id ), 0) logValue  
+		from t_enterpriseinfo t
+		where 1=1 
+		<if test="areaLabel != 'wenzhou'">
+		and t.areaLabel = #{areaLabel}
+		</if>
+		<if test="key !=null and key !=''">
+			and t.entName like concat(#{key}, '%') 	
+		</if>
+    </select>
+    
+    <select id="pointDetail" parameterType="map" resultType="map">
+    	SELECT t.entName
+    		  , t.orgCode
+    		  , t.energyType
+    		  , ROUND(sum(t.value), 2) value
+    		  , t.date
+      	  from t_ent_energyinfo t
+    	where t.company_id = #{companyId}
+    	  and t.energyType = #{energyType}
+    	  and DATE_FORMAT(t.date,'%Y') = DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y')
+		 GROUP BY DATE_FORMAT(t.date,'%Y-%m')
+    </select>
+
+	<select id="pointEleDetail" resultType="java.util.Map" parameterType="map">
+		SELECT t.entName
+	    		, t.orgCode
+			 , t.energyType
+			 , ROUND(sum(t.value), 2) value
+			 , t.date
+	      from t_ent_energyinfo_day t
+    	where t.company_id = #{companyId}
+    	and DATE_FORMAT(t.date,'%Y') = DATE_FORMAT(date_sub(curdate(), interval 12 month),'%Y')
+		<if test="accNumber != '' and accNumber != null  ">
+			and t.accnumber = #{accNumber}
+		</if>
+		GROUP BY DATE_FORMAT(t.date,'%Y-%m')
+	</select>
+
+	<select id="pointEleThisDetail" resultType="java.util.Map">
+		SELECT t.entName
+	    		, t.orgCode
+			 , t.energyType
+			 , ROUND(sum(t.value), 2) value
+			 , t.date
+	      from t_ent_energyinfo_day t
+    	where t.company_id = #{companyId}
+    	and DATE_FORMAT(t.date,'%Y') = DATE_FORMAT(curdate(),'%Y')
+		<if test="accNumber != '' and accNumber != null  ">
+			and t.accnumber = #{accNumber}
+		</if>
+		GROUP BY DATE_FORMAT(t.date,'%Y-%m')
+	</select>
+
+    <select id="pointThisDetail" parameterType="map" resultType="map">
+    	SELECT t.entName
+    	      , t.orgCode
+    	      , t.energyType
+    	      , ROUND(sum(t.value), 2) value
+    	      , t.date
+    	 from t_ent_energyinfo t
+    	where t.company_id = #{companyId} and t.energyType = #{energyType} 
+    	and DATE_FORMAT(t.date,'%Y') = DATE_FORMAT(curdate(),'%Y')
+		GROUP BY DATE_FORMAT(t.date,'%Y-%m')
+    </select>
+    
+    <select id="entOrderList" parameterType="map" resultType="map">
+    	SELECT aa.companyId, aa.entName, aa.value, ROUND((aa.value- aa.lastValue)/aa.lastValue * 100,2) valueRate,ROUND(aa.value/aa.ecValue,2) unitRate, ROUND(aa.ecValue/aa.peopleNum,2) peopleRate, ROUND(aa.ecValue/aa.coveredArea,2) areaRate 
+    	, loginUserName, loginPassword
+    	FROM(
+		SELECT ent.entName, IFNULL(ent.peopleNum, '') peopleNum, IFNULL(ROUND(SUM(e.tce),2),0) value, ent.company_id companyId, ent.orgCode, ent.built_area builtArea, ent.covered_area coveredArea,
+		(SELECT IFNULL(ROUND(SUM(e1.tce),2),0) FROM t_ent_energyinfo_comp_sum e1 where ent.company_id = e1.company_id and DATE_FORMAT(e1.date,'%Y') = DATE_FORMAT(date_sub(STR_TO_DATE(CONCAT(#{date},'-01-01'), '%Y-%m-%d'), interval 12 month),'%Y')) lastValue,
+		(SELECT IFNULL(ROUND(SUM(ec.value),2),0) FROM t_ent_economicsinfo ec where ent.company_id = ec.company_id and DATE_FORMAT(ec.date,'%Y') = #{date}) ecValue, ifnull(ent.login_userName, '') loginUserName, ifnull(ent.login_password, '') loginPassword
+		from t_enterpriseinfo ent
+		LEFT JOIN t_ent_energyinfo_comp_sum e ON ent.company_id = e.company_id and DATE_FORMAT(e.date,'%Y') = #{date}
+		where ent.micro_park = #{microPark} 
+		GROUP BY ent.company_id
+		ORDER BY value desc LIMIT 20) aa
+    </select>
+    
+    <select id="findEnergyinfoList" parameterType="map" resultType="com.enesource.jump.web.dto.EntInfoDTO">
+    	SELECT t.company_id companyId, t.entName, t.orgCode, t.creditCode, t.peopleNum, t.address, t.industryName, t.areaName, t.lng, t.lat, t.industryTypeName, registrationNumber, micro_park microPark
+    	,t.built_area builtArea, t.covered_area coveredArea , CASE WHEN r.tag_key IS NOT NULL then 1 else 0 END isRegulation, conf.remark outputValue, business, fund, registerDate
+    	from t_enterpriseinfo t
+    	LEFT JOIN t_ent_tag_rel r on t.company_id = r.identifier and r.tag_key = 'regulation'
+    	LEFT JOIN t_config conf on conf.type = 'outputValue' and conf.`value` = t.output_value
+    	where 1=1 
+    	<if test="areaLabel != 'wenzhou'">
+		and t.areaLabel = #{areaLabel}
+		</if>
+    	<if test="companyId !=null and companyId !=''">
+		and t.company_id = #{companyId}
+		</if>
+    </select>
+    
+    <select id="findAccnumberListByEnergrType" parameterType="map" resultType="map">
+    	SELECT ent.company_id companyId, ent.entName, r.accnumber 
+		from t_enterpriseinfo ent, t_ent_accnumber_rel r 
+		where ent.company_id = r.company_id and r.type = #{energyType} 
+		<if test="areaLabel != 'wenzhou'">
+		and ent.areaLabel = #{areaLabel}
+		</if>
+		<if test="companyId !=null and companyId !=''">
+		and ent.company_id = #{companyId}
+		</if>
+		ORDER BY ent.company_id
+    </select>
+    
+    <select id="getParkCompanyCounts" resultType="map">
+    	SELECT c.value regionId, c.remark areaName, count(kk.company_id) num, IFNULL(sum(kk.currvalue),0) currvalue,
+		IFNULL(ROUND(case when sum(lastMonthValue) = 0 THEN 0 ELSE (sum(kk.currvalue) - sum(kk.lastMonthValue))/sum(kk.lastMonthValue) * 100 END, 2),0) monthRate, 
+		IFNULL(ROUND(case when sum(lastYearValue) = 0 THEN 0 ELSE (sum(kk.currvalue) - sum(kk.lastYearValue))/sum(kk.lastYearValue) * 100 END, 2),0) yearRate
+		from t_config c 
+		LEFT JOIN 
+		(
+		SELECT
+		t.areaCode regionId, 
+		t.company_id, 
+		(SELECT IFNULL(ROUND(SUM(e.`value`),2),0) FROM t_ent_energyinfo_comp_sum e where t.company_id = e.company_id and e.energyType = '0' and e.date = DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 MONTH),'%Y-%m-01 00:00:00')) currvalue,
+		(SELECT IFNULL(ROUND(SUM(e.`value`),2),0) FROM t_ent_energyinfo_comp_sum e where t.company_id = e.company_id and e.energyType = '0' and e.date = DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 2 MONTH),'%Y-%m-01 00:00:00')) lastMonthValue,
+		(SELECT IFNULL(ROUND(SUM(e.`value`),2),0) FROM t_ent_energyinfo_comp_sum e where t.company_id = e.company_id and e.energyType = '0' and e.date = DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 13 MONTH),'%Y-%m-01 00:00:00')) lastYearValue
+		from t_enterpriseinfo t
+		)kk ON c.value = kk.regionId
+		where c.type = 'areaCode'
+		<if test="areaLabel != 'wenzhou'">
+		and c.areaLabel = #{areaLabel}
+		</if>
+		GROUP BY c.value
+    </select>
+    
+    <select id="getParkCompanyCountsBywhenzhou" resultType="map">
+		SELECT c.adcode regionId, c.name areaName, count(kk.company_id) num, IFNULL(sum(kk.currvalue),0) currvalue,
+		IFNULL(ROUND(case when sum(lastMonthValue) = 0 THEN 0 ELSE (sum(kk.currvalue) - sum(kk.lastMonthValue))/sum(kk.lastMonthValue) * 100 END, 2),0) monthRate, 
+		IFNULL(ROUND(case when sum(lastYearValue) = 0 THEN 0 ELSE (sum(kk.currvalue) - sum(kk.lastYearValue))/sum(kk.lastYearValue) * 100 END, 2),0) yearRate
+		from t_dict_region c 
+		LEFT JOIN 
+		(
+		SELECT
+		CASE WHEN t.region = '330384' THEN '330322' ELSE t.region END regionId, 
+		t.company_id, 
+		(SELECT IFNULL(ROUND(SUM(e.`value`),2),0) FROM t_ent_energyinfo_comp_sum e where t.company_id = e.company_id and e.energyType = '0' and e.date = DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 1 MONTH),'%Y-%m-01 00:00:00')) currvalue,
+		(SELECT IFNULL(ROUND(SUM(e.`value`),2),0) FROM t_ent_energyinfo_comp_sum e where t.company_id = e.company_id and e.energyType = '0' and e.date = DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 2 MONTH),'%Y-%m-01 00:00:00')) lastMonthValue,
+		(SELECT IFNULL(ROUND(SUM(e.`value`),2),0) FROM t_ent_energyinfo_comp_sum e where t.company_id = e.company_id and e.energyType = '0' and e.date = DATE_FORMAT(DATE_SUB(NOW(),INTERVAL 13 MONTH),'%Y-%m-01 00:00:00')) lastYearValue
+		from t_enterpriseinfo t
+		)kk ON c.adcode = kk.regionId
+		where c.parentId = '330300' and c.adcode != '330384'
+		GROUP BY c.adcode
+    </select>
+    
+    
+    
+    <select id="multiEnergyStatistics" resultType="map">
+		SELECT 
+		(SELECT IFNULL(SUM(capacity),0) from t_governmentmapdata where siteType =2 and photo_number != '' and photo_number is not null
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) photovoCapacity,
+		(SELECT IFNULL(SUM(capacity),0) from t_governmentmapdata where siteType =6
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) batteryCapacity,
+		(SELECT IFNULL(SUM(capacity),0) from t_governmentmapdata where siteType =8
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) waterPowerCapacity,
+		(SELECT IFNULL(SUM(capacity),0) from t_governmentmapdata where siteType =9
+		<if test="areaLabel != 'wenzhou'">
+    		and areaLabel = #{areaLabel}
+    	</if>) garbagePowerCapacity
+		FROM dual
+    </select>
+    
+    
+    <select id="projectListBysiteType" parameterType="com.enesource.jump.web.dto.GovMapInfoDTO" resultType="map">
+		SELECT m.siteId, m.siteName, ifnull(m.address, '') address, ifnull(m.lng, '') lng, ifnull(m.lat, '') lat, 
+		ifnull(m.capacity, '') capacity, 
+		ifnull(m.commissionTime, '') commissionTime, 
+		ifnull(m.voltlevel, '') voltlevel, 
+		ifnull(m.chargeType, '') chargeType, 
+		ifnull(m.chargeCountSum, '') chargeCountSum, 
+		ifnull(m.changePowerSum, '') changePowerSum, 
+		ifnull(m.consNo, '') consNo, 
+		ifnull(m.declared_ent, '')  declaredEnt, 
+		ifnull(m.photo_number, '')  photoNumber, 
+		ifnull(m.investor, '') investor, 
+		ifnull(m.ongrid_date, '')  ongridDate,
+		ifnull(m.capacity_proportion,'') capacityProportion
+		from t_governmentmapdata m where m.siteType = #{siteType}
+		<if test="areaLabel != 'wenzhou'">
+    		and m.areaLabel = #{areaLabel}
+    	</if>
+		<if test="siteType ==2">
+			and m.photo_number != '' and m.photo_number is not null
+		</if>
+		<if test="key !=null and key !=''">
+			and m.siteName like concat('%',#{key}, '%') 	
+		</if>
+    </select>
+    
+    <select id="findEntInfo" parameterType="map" resultType="map">
+    	SELECT entName, orgCode, lng, lat, company_id companyId, t.areaLabel
+		from t_enterpriseinfo t where lng is not null and lat is not null and lng != '' and lat != ''
+		<if test="areaLabel != 'wenzhou'">
+		and t.areaLabel = #{areaLabel}
+		</if>
+    </select>
+    
+    <select id="findEleLoseCounts" parameterType="map" resultType="map">
+    	SELECT str_to_date(time.product_date, '%Y-%m-%d %H:%i:%S') date, IFNULL((1-(d.lose_num/d.sum_num)) * 100, '') value from 
+		(
+		SELECT CONCAT(#{date}, '-', lpad(aa.value,2,'0'), ' 00:00:00' ) product_date
+		FROM t_time aa
+		<![CDATA[
+		WHERE CAST(aa.value AS SIGNED) <= DAYOFMONTH(LAST_DAY(CONCAT(#{date},'-01')))
+		]]>
+		and aa.type = 2
+		) time
+		LEFT JOIN t_lose_statistics_day d ON time.product_date = d.date and d.type = 'eleLose' and d.areaLabel = #{areaLabel}
+    </select>
+
+	<select id="getParkTceAddressRate" resultType="java.util.Map" parameterType="map">
+		SELECT ROUND(currvalue, 2) currvalue,
+		ROUND(case when currvalue = 0 THEN 0 ELSE (kk.currvalue - kk.lastMonthValue)/kk.lastMonthValue * 100 END, 2) monthRate,
+		ROUND(case when currvalue = 0 THEN 0 ELSE (kk.currvalue - kk.lastYearValue)/kk.lastYearValue * 100 END, 2) yearRate,
+		(select COUNT(1) from t_enterpriseinfo ) entNUm
+		from
+		(
+		SELECT
+		(SELECT IFNULL(SUM(e.`tce`),0) FROM t_ent_energyinfo_comp_sum e, t_enterpriseinfo t where t.company_id = e.company_id  and e.date =CONCAT(DATE_FORMAT(#{date},'%Y-%m'), '-01 00:00:00')
+		<if test="microPark != null and microPark != ''">
+            and t.micro_park = #{microPark}
+        </if>
+		) currvalue,
+		(SELECT IFNULL(SUM(e.`tce`),0) FROM t_ent_energyinfo_comp_sum e, t_enterpriseinfo t where t.company_id = e.company_id and e.date = CONCAT(DATE_FORMAT(DATE_SUB(#{date},INTERVAL 1 MONTH),'%Y-%m'), '-01 00:00:00')
+		<if test="microPark != null and microPark != ''">
+            and t.micro_park = #{microPark}
+        </if>
+		) lastMonthValue,
+		(SELECT IFNULL(SUM(e.`tce`),0) FROM t_ent_energyinfo_comp_sum e, t_enterpriseinfo t where t.company_id = e.company_id  and e.date = CONCAT(DATE_FORMAT(DATE_SUB(#{date},INTERVAL 12 MONTH),'%Y-%m'), '-01 00:00:00')
+		<if test="microPark != null and microPark != ''">
+            and t.micro_park = #{microPark}
+        </if>
+		) lastYearValue
+		from dual
+		)kk
+	</select>
+
+
+
+
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.enesource.jump.web.dao.ITagMapper">
+
+
+	<insert id="saveTag" parameterType="com.enesource.jump.web.dto.TagDTO">
+		INSERT INTO t_tag (attribute, createUser, createTime, updateUser, updateTime, valid, type, tag_key, tag_name, areaLabel) 
+		VALUES (#{attribute}, 'admin', now(), 'admin', now(), '1', #{type}, CONCAT('tag_',LPAD(_nextval('tag_no'), 8, 0)), #{tagName}, #{areaLabel})
+		<selectKey resultType="string" keyProperty="tagKey">
+			SELECT MAX(tag_key) as value from t_tag where attribute not in ('public', 'protect')
+		</selectKey>
+	</insert>
+	
+	<insert id="saveTagRel" parameterType="com.enesource.jump.web.dto.TagDTO">
+		INSERT INTO t_ent_tag_rel (type, identifier, tag_key) VALUES (#{type}, #{identifier}, #{tagKey});
+	</insert>
+
+
+	<update id="delTag" parameterType="com.enesource.jump.web.dto.TagDTO">
+		update t_tag set valid = 0 where attribute not in ('public', 'protect' ) and tag_key = #{tagKey}
+	</update>
+	
+	<delete id="delTagRelByIdentifier" parameterType="com.enesource.jump.web.dto.TagDTO">
+		delete from t_ent_tag_rel where identifier = #{identifier}
+		<if test="tagKey != null and tagKey != ''">
+		and tag_key = #{tagKey}
+		</if>
+	</delete>
+	
+	<select id="checkTagName" parameterType="com.enesource.jump.web.dto.TagDTO" resultType="int">
+		SELECT COUNT(1) from t_tag where tag_name = #{tagName} and areaLabel = #{areaLabel} and valid = 1
+	</select>
+	
+	<select id="findTagListByCompanyId" parameterType="map" resultType="map">
+		SELECT t.attribute, t.type, t.tag_key tagKey, t.tag_name tagName, t.areaLabel 
+		from t_tag t, t_ent_tag_rel r where t.tag_key = r.tag_key and r.identifier = #{identifier} and t.valid = 1 and t.attribute = 'public'
+		UNION ALL
+		SELECT t.attribute, t.type, t.tag_key tagKey, t.tag_name tagName, t.areaLabel 
+		from t_tag t, t_ent_tag_rel r, t_enterpriseinfo e 
+		where t.tag_key = r.tag_key and r.identifier = #{identifier} and t.valid = 1 and r.identifier = e.company_id and e.areaLabel = t.areaLabel 
+	</select>
+	
+	<select id="findTagListByArealable" parameterType="map" resultType="map">
+		SELECT attribute, tag_key tagKey, tag_name tagName from t_tag t where t.attribute = 'public' and t.valid = 1 
+		UNION ALL
+		SELECT DISTINCT attribute, tag_key tagKey, tag_name tagName from t_tag t where t.attribute in ('protect','private') and t.valid = 1  
+		<if test="areaLabel != 'wenzhou'">
+		and t.areaLabel = #{areaLabel} 
+		</if>
+		ORDER BY attribute DESC
+	</select>
+	
+	
+	<select id="updateFollowTag" parameterType="map" >
+		replace into t_ent_tag_rel(type, identifier, tag_key)   
+	    SELECT 'ent', #{companyId}, 'follow'
+	</select>
+	
+	<select id="findTagList" parameterType="map" resultType="map">
+		SELECT t.tag_key name, tag_name value from t_tag t WHERE t.attribute = 'public'
+		UNION ALL
+		SELECT DISTINCT t.tag_key name, tag_name value from t_tag t WHERE t.attribute in ('protect','private') and t.valid = 1  
+		<if test="areaLabel != 'wenzhou'">
+		and t.areaLabel = #{areaLabel} 
+		</if>
+	</select>
+	
+</mapper>

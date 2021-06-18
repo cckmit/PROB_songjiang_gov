@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.enesource.jump.web.dao.IExceptionMapper">
+    <insert id="saveExceptionInformation" parameterType="com.enesource.jump.web.dto.ExceptionLog">
+        INSERT INTO t_exception_log (createTime, type, name, level, information, operator, url) 
+		VALUES (now(), #{type}, #{name}, #{level}, SUBSTR(#{information},1,2000), #{operator}, #{url})
+    </insert>
+    
+</mapper>

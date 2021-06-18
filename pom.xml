@@ -1,0 +1,262 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.enesource.jump</groupId>
+	<artifactId>jiashan_gov</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<name>jiashan_gov</name>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.9.RELEASE</version>
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		<mysql.version>5.1.41</mysql.version>
+		<servlet.api>3.1.0</servlet.api>
+		<thymeleaf.version>3.0.2.RELEASE</thymeleaf.version>
+		<thymeleaf-layout-dialect.version>2.1.1</thymeleaf-layout-dialect.version>
+	</properties>
+
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>1.5.9.RELEASE</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+
+	</dependencyManagement>
+
+	<profiles>
+		<profile>
+			<id>local</id>
+			<properties>
+	  			<logging.level>WARN</logging.level>
+	  			<mysql.url>172.188.10.132</mysql.url>
+	  			<mysql.port>3306</mysql.port>
+	  			<mysql.username>root</mysql.username>
+	  			<mysql.password>Enesource@2017</mysql.password>
+	  			<datebase.name>jiashan_gov_data</datebase.name>
+	  			<redis.url>172.188.10.151</redis.url>
+	  			<redis.port>6379</redis.port>
+	  			<redis.password>test</redis.password>
+	  		</properties>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+		
+		<profile>
+			<id>dev</id>
+			<properties>
+				<logging.level>INFO</logging.level>
+				<mysql.url>172.188.10.132</mysql.url>
+	  			<mysql.port>3306</mysql.port>
+	  			<mysql.username>root</mysql.username>
+	  			<mysql.password>Enesource@2017</mysql.password>
+	  			<datebase.name>jiashan_gov_data</datebase.name>
+	  			<redis.url>172.188.10.151</redis.url>
+	  			<redis.port>6379</redis.port>
+	  			<redis.password>test</redis.password>
+			</properties>
+		</profile>
+		
+		<profile>
+	  		<id>jiashan_relese</id>
+	  		<properties>
+	  			<logging.level>WARN</logging.level>
+	  			<mysql.url>172.30.93.19</mysql.url>
+	  			<mysql.port>3306</mysql.port>
+	  			<mysql.username>jsnysk_prod</mysql.username>
+	  			<mysql.password>Jsnysk@365</mysql.password>
+	  			<datebase.name>zhnyfw_jsnysk</datebase.name>
+				<redis.url>redis-single.ns-jsnysk-prod.svc.cluster.local</redis.url>
+	  			<redis.port>6379</redis.port>
+	  			<redis.password>jsnysk@1234</redis.password>
+			</properties>
+	  	</profile>
+	</profiles>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+
+			<!--  
+			<exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+			-->
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>druid</artifactId>
+			<version>1.1.6</version>
+		</dependency>
+
+		<!-- mysql -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>${mysql.version}</version>
+		</dependency>
+
+		<!-- servlet-api -->
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>${servlet.api}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- pagehelper -->
+		<dependency>
+			<groupId>com.github.pagehelper</groupId>
+			<artifactId>pagehelper</artifactId>
+			<version>4.1.1</version>
+		</dependency>
+
+		<!-- mybatis -->
+		<dependency>
+			<groupId>org.mybatis.spring.boot</groupId>
+			<artifactId>mybatis-spring-boot-starter</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.24</version>
+		</dependency>
+
+		<!-- 热部署 -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<optional>true</optional>
+			<scope>true</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>compile</scope>
+		</dependency>
+
+		<dependency>
+            <groupId>com.envisioniot</groupId>
+            <artifactId>enos-api</artifactId>
+            <version>2.3.6</version>
+        </dependency>
+
+        <dependency>
+		    <groupId>com.envisioniot</groupId>
+		    <artifactId>apim-poseidon</artifactId>
+		    <version>0.1.10</version>
+		</dependency>
+		
+		<!-- excel 工具 -->
+		<dependency>
+            <groupId>cn.afterturn</groupId>
+            <artifactId>easypoi-base</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.afterturn</groupId>
+            <artifactId>easypoi-web</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.afterturn</groupId>
+            <artifactId>easypoi-annotation</artifactId>
+            <version>4.1.0</version>
+        </dependency>
+        
+        <!-- java tools -->
+		<dependency>
+		    <groupId>cn.hutool</groupId>
+		    <artifactId>hutool-all</artifactId>
+		    <version>5.2.5</version>
+		</dependency>
+		
+		<!-- redis -->
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-redis</artifactId>
+		    <version>1.4.7.RELEASE</version>
+		</dependency>
+		
+        <!-- swagger2 -->
+		<dependency>
+		    <groupId>io.springfox</groupId>
+		    <artifactId>springfox-swagger2</artifactId>
+		    <version>2.7.0</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>io.springfox</groupId>
+		    <artifactId>springfox-swagger-ui</artifactId>
+		    <version>2.7.0</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>com.auth0</groupId>
+		    <artifactId>java-jwt</artifactId>
+		    <version>3.10.3</version>
+		</dependency>
+
+	</dependencies>
+
+  <build>
+  	  <plugins>
+	  	<!-- 热部署 -->
+	    <plugin>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-maven-plugin</artifactId>
+	        <configuration>
+	        	<mainClass>com.enesource.jump.web.WebApplication</mainClass>
+	         	<fork>true</fork>
+				<excludeDevtools>true</excludeDevtools>
+	        </configuration>
+		</plugin>
+	  </plugins>
+    <finalName>jiashan_gov</finalName>
+  </build>
+    
+</project>

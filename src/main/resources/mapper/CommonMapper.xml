@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.enesource.jump.web.dao.ICommonMapper">
+	<update id="updateUserPassWord" parameterType="map">
+		update t_user
+		   set password =  #{updatePassword}
+		  where userId = #{userId}
+		    and password = #{localPassword}
+	</update>
+
+	<select id="findData" resultType="com.enesource.jump.web.dto.DataDTO">
+		SELECT s.site_name name, IFNULL(ROUND(MAX(aa.value),3),'#N/A') value, sr.isPark, s.address, r.name area, sr.park, '联元平台' remark
+		from sanhua.t_site s
+		LEFT JOIN
+		(SELECT d.siteId, SUM(u.`value`) value from sanhua.t_enos_device d 
+		LEFT JOIN sanhua.t_day_useeppositive u ON d.mdmid = u.deviceId and DATE_FORMAT(u.time,'%Y-%m-%d') = DATE_SUB(curdate(),INTERVAL 1 DAY)
+		GROUP BY u.deviceId) aa ON s.objectId = aa.siteId
+		LEFT JOIN sanhua.t_dict_region r ON s.region = r.adcode
+        LEFT JOIN sanhua.t_site_info_rel sr ON sr.site_id = s.site_id
+		where s.objectTypeId = 58
+		GROUP BY s.site_id
+		ORDER BY s.site_id
+	</select>
+	
+	<select id="findByUsername" parameterType="string" resultType="string">
+        select userId from t_user where userName = #{userName} and valid = 1
+    </select>
+    
+    
+    <select id="checkUserPwd" parameterType="map" resultType="map">
+        select u.userId, u.userName
+        		, u.shortName, u.areaLabel, ifnull(u.province, '') province, ifnull(u.city, '') city
+        		, ifnull(u.region, '') region
+        		, ifnull(u.level, '') level
+        		, companyId
+        from t_user u
+        where u.userName = #{userName} and u.password = #{password} and u.valid = 1
+    </select>
+
+	<select id="checkUserByUserId" parameterType="string" resultType="map">
+        select u.userId, u.userName, u.shortName, u.areaLabel, ifnull(u.province, '') province, ifnull(u.city, '') city, ifnull(u.region, '') region ,level
+        from t_user u
+        where u.userId = #{userId} and u.valid = 1
+    </select>
+
+	<select id="getMenuList" parameterType="map" resultType="map">
+        SELECT DISTINCT c.menuId, c.menuName name, c.menuUrl link, c.icon, c.parentMenuId, c.class, c.tagId
+        from t_menu c, t_user u, t_role_user_rel ru, t_role_menu_rel rm
+        where c.valid = 1 and u.userId = ru.userId and ru.roleId = rm.roleId and rm.menuId = c.menuId and u.userId = #{userId}        
+        <if test="parentMenuId == null">
+        	and c.parentMenuId is null
+        	and c.level != 3
+        </if>
+        <if test="parentMenuId != null">
+        	and c.parentMenuId = #{parentMenuId}
+        </if>
+        order by c.orderFlag
+    </select>
+    
+    <select id="getProvinceList" parameterType="map" resultType="map">
+		SELECT c.adcode, c.name
+		from t_dict_region c 
+		where c.isEnable = 1
+		<if test="level == 1">
+		and c.level = 1 
+		</if>
+		<if test="adcode != null and adcode != ''">
+		and c.parentId = #{adcode}
+		</if>
+    </select>
+    
+    <select id="getStreetList" parameterType="map" resultType="map">
+        SELECT c.value adcode, c.remark name from t_config c where c.type = 'areaCode' and c.subType = #{adcode}
+    </select>
+    
+    <select id="getIndustryList" parameterType="map" resultType="map">
+        SELECT t.code value, t.name from t_industry_category t
+		where 1=1
+		<if test="level != null and level != ''">
+		and t.level = #{level}
+		</if>
+		<if test="code != null and code != ''">
+		and t.pre_code = #{code}
+		</if>
+    </select>
+	
+	<select id="getSsoAuth" parameterType="string" resultType="string">
+    	select  value from  t_config where type = 'httpClientUrl' and areaLabel = #{areaLabel}
+	</select>
+
+
+	<select id="getUserInfoByUserId" resultType="com.enesource.jump.web.dto.UserInfoDTO" parameterType="string">
+		select level
+		  from t_user
+		  where userId = #{userId}
+	</select>
+	
+	<insert id="insertUserOperation" parameterType="map">
+        INSERT INTO t_user_operation (uuid, entId, userId, url, timestamp, param, times) VALUES (UUID(), NULL, #{userId}, #{url}, NOW(), NULL, NULL)
+    </insert>
+    
+    <select id="checkwhitelist" parameterType="string" resultType="int" >
+		select 1 from t_white_list where ip = #{ip}
+	</select>
+
+	<select id="selectLimit1IP" resultType="string">
+		select ip from t_white_list limit 1
+	</select>
+
+</mapper>

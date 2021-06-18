@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.enesource.jump.web.dao.IInsightMapper">
+
+	<select id="findInsightIndex" parameterType="map" resultType="map">
+		SELECT c.subTypeName, c.remark, c.value from t_config c where c.areaLabel = #{areaLabel} and c.type = 'insightIndex'
+	</select>
+	
+	<update id="saveInsightIndex" parameterType="map">
+		update t_config set value = #{value} where type = 'insightIndex' and subTypeName = #{key} and areaLabel = #{areaLabel}
+	</update>
+	
+	<select id="findInsightStatistics" parameterType="map" resultType="map">
+		select COUNT(p.company_id) entCount
+		, IFNULL(SUM(p.thisvalue),0) sumValue
+		, round(IFNULL(((SUM(p.thisvalue)/SUM(p.lastvalue))-1) * 100, 0), 2) rate
+		, round(IFNULL(((SUM(p.thisvalue)/SUM(p.lastYearValue))-1) * 100, 0), 2) sameRate
+		, count(if(production_status=4,true,null)) inProductionCount
+		, count(if(growthRate=2,true,null)) increaseCount
+		, count(if(growthRate=0,true,null)) decreaseCount
+		
+		, round(((SELECT SUM(e.value)  from t_ent_energyinfo_comp_sum e where e.company_id = p.company_id and e.energyType = 0 and year(e.date) = year(now()))
+		/(SELECT SUM(s.value) value FROM t_ent_energyinfo_comp_sum s 
+		<![CDATA[
+		where s.company_id = p.company_id and s.energyType = 0 and YEAR(s.date) = YEAR(DATE_SUB(now(),INTERVAL 1 YEAR) ) and MONTH(s.date) < MONTH(now())
+		]]>) -1) * 100, 2) sameTimeRate
+		
+		, round(((SELECT SUM(e.tce)  from t_ent_energyinfo_comp_sum e where e.company_id = p.company_id and year(e.date) = year(now()))
+		/(SELECT SUM(s.tce) value FROM t_ent_energyinfo_comp_sum s 
+		<![CDATA[
+		where s.company_id = p.company_id and YEAR(s.date) = YEAR(DATE_SUB(now(),INTERVAL 1 YEAR) ) and MONTH(s.date) < MONTH(now())
+		]]>) -1) * 100, 2) tceYearRate
+		
+		<if test="companyId != null and companyId != ''">
+		,IFNULL((SELECT SUM(e.value)  from t_ent_energyinfo_comp_sum e where e.company_id = p.company_id and e.energyType = 0 and year(e.date) = year(now())),0) yearValue
+		,IFNULL((SELECT SUM(e.value) from t_ent_energyinfo_comp_sum e where e.company_id = p.company_id and e.energyType = 0 and year(e.date) = year(DATE_SUB(now(),INTERVAL 1 YEAR))),0) sumLastvalue
+		,IFNULL((SELECT SUM(e.tce)  from t_ent_energyinfo_comp_sum e where e.company_id = p.company_id and year(e.date) = year(now())),0) yearTceValue
+		<![CDATA[
+		,IFNULL((SELECT SUM(e.tce) from t_ent_energyinfo_comp_sum e where e.company_id = p.company_id and year(e.date) = year(DATE_SUB(now(),INTERVAL 1 YEAR)) and MONTH(e.date) < MONTH(now())),0) sumLastTcevalue
+		]]>
+		,IFNULL(p.production_status,'') productionStatus, 
+		IFNULL(p.production_value,0) productionValue,
+		IFNULL(p.growthRate,'') growthRate,
+		IFNULL(p.unit_ele,'') unitEle
+		</if>
+		from 
+		(
+		SELECT e.company_id
+			, s.value thisvalue
+			, s1.value lastvalue
+			, s2.value lastYearValue
+			, CASE when (s.value/s1.value -1) *100 - c.value > 0 then 1 else 0 END rate
+			, s.production_status
+			, s.production_value
+			, s.tce
+			, s1.tce lastTce
+			, s2.tce lastYearTce
+			, s.growth_rate growthRate, e.unit_ele
+		from t_config c, t_enterpriseinfo e
+		<if test="type != null and type != ''">
+		INNER JOIN t_ent_tag_rel r2 on e.company_id = r2.identifier and r2.tag_key = #{type}
+		</if>
+    	LEFT JOIN t_ent_energyinfo_comp_sum s ON e.company_id = s.company_id and s.date = CONCAT(#{date},'-01 00:00:00') and s.energyType = 0 
+    	LEFT JOIN t_ent_energyinfo_comp_sum s1 ON s1.date = DATE_SUB(CONCAT(#{date},'-01 00:00:00') ,INTERVAL 1 MONTH) and e.company_id = s1.company_id and s1.energyType = 0
+    	LEFT JOIN t_ent_energyinfo_comp_sum s2 ON s2.date = DATE_SUB(CONCAT(#{date},'-01 00:00:00') ,INTERVAL 1 YEAR) and e.company_id = s2.company_id and s2.energyType = 0
+		where c.type = 'insightIndex' and c.subTypeName = 'stable' and c.areaLabel = e.areaLabel
+		<if test="areaLabel != 'wenzhou'">
+		and e.areaLabel = #{areaLabel}
+		</if>
+		<if test="areaCode != null and areaCode != ''">
+		and e.areaCode = #{areaCode}
+		</if>
+		<if test="industryType != null and industryType != ''">
+		and e.industryType LIKE CONCAT(#{industryType},'%')
+		</if>
+		<if test="outputValue != null and outputValue != ''">
+		and e.output_value = #{outputValue}
+		</if>
+		) p
+		<if test="companyId != null and companyId != ''">
+		where p.company_id = #{companyId}
+		</if>
+	</select>
+	
+	
+	<select id="findInsightWeekStatistics" parameterType="map" resultType="map">
+		select COUNT(p.company_id) entCount
+		, IFNULL(SUM(p.thisvalue),0) sumValue
+		, SUM(p.thisvalue)/SUM(p.unit_ele/30.5*7) weekUnitRate
+		, round(IFNULL(((SUM(p.thisvalue)/SUM(p.lastvalue))-1) * 100, 0), 3) rate
+		, count(if(production_status=4,true,null)) inProductionCount
+		, count(if(growthRate=2,true,null)) increaseCount
+		, count(if(growthRate=0,true,null)) decreaseCount
+		from 
+		(
+		SELECT e.company_id
+			, s.value thisvalue
+			, s1.value lastvalue
+			, s.production_status
+			, s.production_value
+      		, CASE when (s.value/s1.value -1) *100 - c.value > 0 then 1 else 0 END rate
+			, s.tce
+			, s.growth_rate growthRate
+			, e.unit_ele
+		from t_config c, t_enterpriseinfo e
+		<if test="type != null and type != ''">
+		INNER JOIN t_ent_tag_rel r2 on e.company_id = r2.identifier and r2.tag_key = #{type}
+		</if>
+    	LEFT JOIN t_ent_energyinfo_comp_week_sum s ON e.company_id = s.company_id and s.monday = CONCAT(#{date},' 00:00:00')
+		LEFT JOIN t_ent_energyinfo_comp_week_sum s1 ON e.company_id = s1.company_id and s1.monday =  DATE_SUB(CONCAT(#{date},' 00:00:00') ,INTERVAL 7 DAY)
+		where c.type = 'insightIndex' and c.subTypeName = 'stable' and c.areaLabel = e.areaLabel
+		<if test="areaLabel != 'wenzhou'">
+		and e.areaLabel = #{areaLabel}  
+		</if>
+		<if test="areaCode != null and areaCode != ''">
+		and e.areaCode = #{areaCode}
+		</if>
+		<if test="industryType != null and industryType != ''">
+		and e.industryType LIKE CONCAT(#{industryType},'%')
+		</if>
+		<if test="outputValue != null and outputValue != ''">
+		and e.output_value = #{outputValue}
+		</if>
+		) p
+		<if test="companyId != null and companyId != ''">
+		where p.company_id = #{companyId}
+		</if>
+	</select>
+	
+	<select id="getLastsametimeElevalue" parameterType="map" resultType="double">
+		SELECT SUM(s.value) value FROM t_ent_energyinfo_comp_sum s 
+		<![CDATA[
+		where s.company_id = #{companyId} and YEAR(s.date) = YEAR(DATE_SUB(now(),INTERVAL 1 YEAR) ) and MONTH(s.date) < MONTH(now())
+		]]>
+	</select>
+	
+	<select id="findInsightEleList" parameterType="map" resultType="map">
+		SELECT s.date, round(IFNULL(SUM(s.value),0), 3) value
+		from t_ent_energyinfo_day s, t_enterpriseinfo e
+		<if test="type != null and type != ''">
+		INNER JOIN t_ent_tag_rel r2 on e.company_id = r2.identifier and r2.tag_key = #{type}
+		</if>
+		where e.company_id = s.company_id and DATE_FORMAT(s.date,'%Y-%m') = #{date}
+		<if test="areaLabel != 'wenzhou'">
+		and e.areaLabel = #{areaLabel} 
+		</if>
+		<if test="areaCode != null and areaCode != ''">
+		and e.areaCode = #{areaCode}
+		</if>		
+		<if test="industryType != null and industryType != ''">
+		and e.industryType LIKE CONCAT(#{industryType},'%')
+		</if>
+		<if test="outputValue != null and outputValue != ''">
+		and e.output_value = #{outputValue}
+		</if>
+		<if test="companyId != null and companyId != ''">
+		and e.company_id = #{companyId}
+		</if>
+		<if test="accNumber != null and accNumber != ''">
+		and s.accnumber = #{accNumber}
+		</if>
+		GROUP BY s.date
+		order by s.date 
+	</select>
+	
+	<select id="findInsightEleListWeek" parameterType="map" resultType="map">
+		SELECT s.date, round(IFNULL(SUM(s.value),0), 3) value
+		from t_ent_energyinfo_day s, t_enterpriseinfo e
+		<if test="type != null and type != ''">
+		INNER JOIN t_ent_tag_rel r2 on e.company_id = r2.identifier and r2.tag_key = #{type}
+		</if>
+		<![CDATA[
+		where e.company_id = s.company_id and DATE_FORMAT(s.date,'%Y-%m-%d') >= #{date} and DATE_FORMAT(s.date,'%Y-%m-%d') <= DATE_ADD(CONCAT(#{date}) ,INTERVAL 7 DAY)
+		]]>
+		<if test="areaLabel != 'wenzhou'">
+		and e.areaLabel = #{areaLabel} 
+		</if>
+		<if test="areaCode != null and areaCode != ''">
+		and e.areaCode = #{areaCode}
+		</if>		
+		<if test="industryType != null and industryType != ''">
+		and e.industryType LIKE CONCAT(#{industryType},'%')
+		</if>
+		<if test="outputValue != null and outputValue != ''">
+		and e.output_value = #{outputValue}
+		</if>
+		<if test="companyId != null and companyId != ''">
+		and e.company_id = #{companyId}
+		</if>
+		GROUP BY s.date
+		order by s.date 
+	</select>
+	
+	<select id="findInsightEleListLastWeek" parameterType="map" resultType="map">
+		SELECT s.date, round(IFNULL(SUM(s.value),0), 3) value
+		from t_ent_energyinfo_day s, t_enterpriseinfo e
+		<if test="type != null and type != ''">
+		INNER JOIN t_ent_tag_rel r2 on e.company_id = r2.identifier and r2.tag_key = #{type}
+		</if>
+		<![CDATA[
+		where e.company_id = s.company_id and DATE_FORMAT(s.date,'%Y-%m-%d') >= DATE_SUB(CONCAT(#{date}) ,INTERVAL 7 DAY) and DATE_FORMAT(s.date,'%Y-%m-%d') <= #{date}
+		]]>
+		<if test="areaLabel != 'wenzhou'">
+		and e.areaLabel = #{areaLabel} 
+		</if>
+		<if test="areaCode != null and areaCode != ''">
+		and e.areaCode = #{areaCode}
+		</if>		
+		<if test="industryType != null and industryType != ''">
+		and e.industryType LIKE CONCAT(#{industryType},'%')
+		</if>
+		<if test="outputValue != null and outputValue != ''">
+		and e.output_value = #{outputValue}
+		</if>
+		<if test="companyId != null and companyId != ''">
+		and e.company_id = #{companyId}
+		</if>
+		GROUP BY s.date
+		order by s.date 
+	</select>
+	
+	<select id="findInsightCompanyList" parameterType="com.enesource.jump.web.dto.InsightDTO" resultType="map">
+		SELECT e.company_id companyId
+				, e.entName
+				, e.unit_ele unitEle
+				, s.value thisvalue
+				, round(s.month_rate, 2) monthRate, round(s.year_rate, 2) yearRate
+				, production_status productionStatus
+				, s.growth_rate growthRate
+				,IFNULL((SELECT SUM(aa.value)
+					  from t_ent_energyinfo_comp_sum aa
+					 where e.company_id = aa.company_id and aa.energyType = 0 and YEAR(aa.date) = #{year}),0) yearValue
+		,CASE WHEN production_status = 0 THEN '停产'
+		     WHEN production_status = 1 THEN '半停产'
+				 WHEN production_status = 2 THEN '减产'
+		     WHEN production_status = 3 THEN '正常'
+		     WHEN production_status = 4 THEN '增产'
+		     WHEN production_status = 5 THEN '异常增产'
+		     else '' end productionStatusName
+		,CASE WHEN growth_rate = 0 THEN '锐减'
+		     WHEN growth_rate = 1 THEN '平稳'
+				 WHEN growth_rate = 2 THEN '激增'
+				 WHEN growth_rate = 3 THEN '异常激增'
+		     else '' end growthRateName
+		,e.creditCode,e.orgCode,e.areaName,e.address,e.micro_park,e.business,e.contactPerson,e.contactPhone,e.industryTypeName
+		, conf.remark output_value
+		, GROUP_CONCAT(DISTINCT r.accNumber) accNumberList
+		, GROUP_CONCAT(DISTINCT tag.tag_name) tagList
+		from t_enterpriseinfo e
+		<if test="type != null and type != ''">
+		INNER JOIN t_ent_tag_rel r2 on e.company_id = r2.identifier and r2.tag_key = #{type}
+		</if>
+		LEFT JOIN t_config conf on conf.type = 'outputValue' and conf.`value` = e.output_value
+		LEFT JOIN t_ent_accnumber_rel r ON r.company_id = e.company_id and r.type = '0'
+		LEFT JOIN t_ent_tag_rel tr ON tr.identifier = e.company_id 
+		LEFT JOIN t_tag tag ON tr.tag_key = tag.tag_key
+		LEFT JOIN t_ent_energyinfo_comp_sum s ON e.company_id = s.company_id and s.date = CONCAT(#{date},'-01 00:00:00') and s.energyType = 0
+		where 1=1
+		<if test="areaLabel != 'wenzhou'">
+		and e.areaLabel = #{areaLabel} 
+		</if>
+		<if test="areaCode != null and areaCode != ''">
+		and e.areaCode = #{areaCode}
+		</if>		
+		<if test="industryType != null and industryType != ''">
+		and e.industryType LIKE CONCAT(#{industryType},'%')
+		</if>
+		<if test="outputValue != null and outputValue != ''">
+		and e.output_value = #{outputValue}
+		</if>
+		<if test="entName != null and entName != ''">
+		and e.entName LIKE CONCAT('%',#{entName},'%')
+		</if>
+		<if test="proStatus != null">
+		and s.production_status = #{proStatus}
+		</if>
+		<if test="growthRate != null">
+		and s.growth_rate = #{growthRate}
+		</if>
+		GROUP BY e.company_id
+		<if test="ordreBy == 'monthRate'">
+		order by s.month_rate 
+		<if test="ordreFlag == 1">
+		ASC
+		</if>
+		<if test="ordreFlag == 0">
+		DESC
+		</if>
+		</if>
+		<if test="ordreBy == 'yearRate'">
+		order by s.year_rate 
+		<if test="ordreFlag == 1">
+		ASC
+		</if>
+		<if test="ordreFlag == 0">
+		DESC
+		</if>
+		</if>
+		<if test="ordreBy == 'thisvalue'">
+		order by s.value 
+		<if test="ordreFlag == 1">
+		ASC
+		</if>
+		<if test="ordreFlag == 0">
+		DESC
+		</if>
+		</if>
+	</select>
+	
+	
+	<select id="findInsightWeekCompanyList" parameterType="com.enesource.jump.web.dto.InsightDTO" resultType="map">
+		SELECT e.company_id companyId, e.entName, (SUM(r.unit_ele_day)*7) unitEle, s.value thisvalue, round(s.week_rate, 2) weekRate, production_status productionStatus, s.growth_rate growthRate,
+		IFNULL((SELECT SUM(aa.value)  from t_ent_energyinfo_comp_sum aa where e.company_id = aa.company_id and aa.energyType = 0 and YEAR(aa.date) = YEAR(NOW())),0) yearValue, s.production_value productionValue
+		,CASE WHEN production_status = 0 THEN '停产'
+		     WHEN production_status = 1 THEN '半停产'
+				 WHEN production_status = 2 THEN '减产'
+		     WHEN production_status = 3 THEN '正常'
+		     WHEN production_status = 4 THEN '增产'
+		     WHEN production_status = 5 THEN '异常增产'
+		     else '' end productionStatusName
+		,CASE WHEN growth_rate = 0 THEN '锐减'
+		     WHEN growth_rate = 1 THEN '平稳'
+				 WHEN growth_rate = 2 THEN '激增'
+				 WHEN growth_rate = 3 THEN '异常激增'
+		     else '' end growthRateName
+		from t_enterpriseinfo e
+		<if test="type != null and type != ''">
+		INNER JOIN t_ent_tag_rel r2 on e.company_id = r2.identifier and r2.tag_key = #{type}
+		</if>
+		LEFT JOIN t_ent_energyinfo_comp_week_sum s ON e.company_id = s.company_id and s.monday = CONCAT(#{date},' 00:00:00')
+		LEFT JOIN t_ent_accnumber_rel r ON e.company_id = r.company_id
+		where 1=1 
+		<if test="areaLabel != 'wenzhou'">
+		and e.areaLabel = #{areaLabel} 
+		</if>
+		<if test="areaCode != null and areaCode != ''">
+		and e.areaCode = #{areaCode}
+		</if>		
+		<if test="industryType != null and industryType != ''">
+		and e.industryType LIKE CONCAT(#{industryType},'%')
+		</if>
+		<if test="outputValue != null and outputValue != ''">
+		and e.output_value = #{outputValue}
+		</if>
+		<if test="entName != null and entName != ''">
+		and e.entName LIKE CONCAT('%',#{entName},'%')
+		</if>
+		<if test="proStatus != null">
+		and s.production_status = #{proStatus}
+		</if>
+		<if test="growthRate != null">
+		and s.growth_rate = #{growthRate}
+		</if>
+		GROUP BY e.company_id
+		<if test="ordreBy == 'weekRate'">
+		order by s.week_rate 
+		<if test="ordreFlag == 1">
+		ASC
+		</if>
+		<if test="ordreFlag == 0">
+		DESC
+		</if>
+		</if>
+		<if test="ordreBy == 'productionValue'">
+		order by s.production_value 
+		<if test="ordreFlag == 1">
+		ASC
+		</if>
+		<if test="ordreFlag == 0">
+		DESC
+		</if>
+		</if>
+		<if test="ordreBy == 'thisvalue'">
+		order by s.value 
+		<if test="ordreFlag == 1">
+		ASC
+		</if>
+		<if test="ordreFlag == 0">
+		DESC
+		</if>
+		</if>
+	</select>
+
+	<select id="findInsightYongReList" resultType="java.util.Map" parameterType="map">
+		SELECT s.date, round(IFNULL(SUM(s.value),0), 3) value
+		from t_ent_yongre_day s
+		where DATE_FORMAT(s.date,'%Y-%m') = #{date}
+			 and s.company_id = #{companyId}
+		GROUP BY s.date
+		order by s.date
+	</select>
+
+	<update id="updateCompanyUnitEle" parameterType="map">
+		update t_enterpriseinfo set unit_ele = #{unitEle} where company_id = #{companyId}
+	</update>
+	
+</mapper>

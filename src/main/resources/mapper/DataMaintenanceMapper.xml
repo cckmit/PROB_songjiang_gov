@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.enesource.jump.web.dao.IDataMaintenanceMapper">
+
+
+    <insert id="insertEntTicketInfo" parameterType="list">
+        replace into t_ent_economicsinfo (company_id,date,value,update_user,update_time,entName)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.companyId}, #{item.date}, #{item.value},#{item.userId},now(),#{item.entName})
+        </foreach>
+    </insert>
+
+    <insert id="insertDianFeiInfo" parameterType="list">
+        replace into t_ent_dianfei_info (company_id,date,value)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.companyId}, #{item.date}, #{item.value})
+        </foreach>
+    </insert>
+
+    <insert id="insertFuHeInfo" parameterType="list">
+        replace into t_ent_fuhe_info (company_id,date,value,update_user,update_time,entName,accNumber)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.companyId}, #{item.date}, #{item.value},#{item.userId},now(),#{item.entName},#{item.accNumber})
+        </foreach>
+    </insert>
+
+    <insert id="insertEnergyInfo" parameterType="list">
+        replace into t_ent_energyinfo
+        (company_id,date,value,accnumber,energyType,update_user,update_time,areaCode,entName,tce)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.companyId}, #{item.date},
+            #{item.value},#{item.accnumber},#{item.energyType},#{item.userId},now(),#{item.areaCode},#{item.entName},#{item.tce})
+        </foreach>
+    </insert>
+
+    <insert id="insertYongReInfo" parameterType="list">
+        replace into t_ent_yongre_day (company_id,date,value,update_user,update_time,entName,accNumber,areaCode)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.companyId}, #{item.date}, #{item.value},#{item.userId},now(),#{item.entName},#{item.accnumber},#{item.areaCode})
+        </foreach>
+    </insert>
+
+    <insert id="insertEleInfo" parameterType="list">
+        replace into t_ent_energyinfo_day (company_id,entName,accnumber,energyType,`value`,date ,tce,feng,jian,gu,areaCode)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.companyId},#{item.entName},#{item.accnumber},'0',
+            if(#{item.jian}+#{item.feng}+#{item.gu}>#{item.rcvElecCap}*24,#{item.rcvElecCap}*24,#{item.jian}+#{item.feng}+#{item.gu}),
+            #{item.date},
+            if(#{item.jian}+#{item.feng}+#{item.gu}>#{item.rcvElecCap}*24,#{item.rcvElecCap}*24,#{item.jian}+#{item.feng}+#{item.gu}) * 0.0001229,
+            #{item.feng},#{item.jian},#{item.gu},#{item.areaCode})
+        </foreach>
+    </insert>
+
+    <update id="updateEntTicketInfo" parameterType="list">
+        update t_ent_economicsinfo
+        set value =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.value}
+        </foreach>
+        ,update_user =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.userId}
+        </foreach>
+        ,update_time =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then now()
+        </foreach>
+        where id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateDianFeiInfo" parameterType="list">
+        update t_ent_dianfei_info
+        set value =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.value}
+        </foreach>
+        where id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateFuHeInfo" parameterType="list">
+        update t_ent_fuhe_info
+        set value =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.value}
+        </foreach>
+        ,update_user =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.userId}
+        </foreach>
+        ,update_time =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then now()
+        </foreach>
+        where id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateEnergyInfo" parameterType="list">
+        update t_ent_energyinfo
+        set value =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.value}
+        </foreach>
+        ,update_user =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.userId}
+        </foreach>
+        ,update_time =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then now()
+        </foreach>
+        where id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateYongReInfo" parameterType="list">
+        update t_ent_yongre_day
+        set value =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.value}
+        </foreach>
+        ,update_user =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.userId}
+        </foreach>
+        ,update_time =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then now()
+        </foreach>
+        where id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateFengEleInfo" parameterType="list">
+        update t_ent_energyinfo_day
+        set feng =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.feng}
+        </foreach>
+        where id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateJianEleInfo" parameterType="list">
+        update t_ent_energyinfo_day
+        set jian =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.jian}
+        </foreach>
+        where id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateGuEleInfo" parameterType="list">
+        update t_ent_energyinfo_day
+        set gu =
+        <foreach collection="list" item="item" index="index" separator=" " open="case ID" close="end">
+            when #{item.id} then #{item.gu}
+        </foreach>
+        where id in
+        <foreach collection="list" item="item" index="index" separator="," open="(" close=")">
+            #{item.id}
+        </foreach>
+    </update>
+
+    <update id="updateValueEleInfo" parameterType="com.enesource.jump.web.dto.ExcelDataImportDTO">
+		update t_ent_energyinfo_day
+		   set value = feng + gu +jian
+		   	,tce = (feng + gu +jian) * 0.0001229
+		WHERE DATE_FORMAT(date,'%Y-%m') = #{date}
+	</update>
+
+    <update id="updateKaiPiaoInfoByCompany" parameterType="map">
+		update t_ent_economicsinfo
+		   set value = #{value}
+		   		 ,update_user = #{userId}
+		 where id = #{id}
+	</update>
+
+    <update id="updateEntEnergyInfoByDate" parameterType="map">
+		update t_ent_energyinfo
+		  set value = #{value}
+		  	  ,tce = #{tce}
+		  	  ,update_user = #{userId}
+		where id= #{id}
+	</update>
+
+
+    <select id="dataFuHeMainListByMonth" parameterType="map" resultType="map">
+	SELECT ROUND(IFNULL(r.value,0),2) value, r.date
+		FROM t_ent_fuhe_info r
+		where r.company_id = #{companyId}
+		 and r.accnumber = #{accnumber} and year(r.date) = #{date}
+		ORDER BY r.date
+	</select>
+
+    <insert id="insetKaiPiaoByCompany" parameterType="map">
+		insert into t_ent_economicsinfo(company_id,date,value,update_user)
+		values(#{companyId},#{date},#{value},#{userId})
+	</insert>
+
+    <insert id="insetEnergyInfoByCompany" parameterType="map">
+		insert into t_ent_energyinfo(company_id,entName,accnumber,energyType,date,value,tce,update_user)
+		select  #{companyId},r.name,r.accnumber,#{energyType},#{date},#{value},#{tce},#{userId}
+		 from t_ent_accnumber_rel r
+		where company_id = #{companyId}
+		 and type = #{energyType}
+	</insert>
+
+    <select id="getEntTicketInfoByImport" resultType="java.util.Map"
+            parameterType="com.enesource.jump.web.dto.ExcelDataImportDTO">
+		select   i.company_id companyId
+				,i.date
+				,i.value
+				,id
+		  from   t_ent_economicsinfo i
+		    where year(i.date) = #{date}
+	</select>
+
+    <select id="getEntKaiPiaoInfo" resultType="java.util.Map" parameterType="map">
+		select
+			 ifnull(t.value,'') value
+			,i.value month
+		from t_time i
+			left join  t_ent_economicsinfo t on i.value = month(t.date)
+		where year(t.date) = #{date}
+		    and t.company_id = #{companyId}
+		    and i.type= '1'
+	</select>
+
+    <select id="dataMainCompanyAccList" parameterType="com.enesource.jump.web.dto.ParamDTO" resultType="map">
+		SELECT e.company_id companyId
+		        , e.entName
+		        , #{date} date
+		        ,r.accNumber accNumber
+		 from t_enterpriseinfo e
+		 left join t_ent_accnumber_rel r  on e.company_id =  r.company_id
+		<if test="type != 'all' and type != null">
+			INNER JOIN t_ent_tag_rel tag ON tag.identifier = e.company_id and tag.tag_key = #{type}
+		</if>
+		where 1=1
+		<if test="areaCode != 'all' and areaCode != null ">
+			and e.areaCode = #{areaCode}
+		</if>
+		<if test="dataType != '' and dataType != null and dataType != '14' ">
+			and r.type = #{dataType}
+		</if>
+        <if test="dataType == '14' ">
+            and r.type = '0'
+        </if>
+		<if test="industry != 'all' and industry != null ">
+			and CONCAT(SUBSTR(e.industryType,1,3),'00') = CONCAT(#{industry},'00')
+		</if>
+		<if test="key != null and key !=''">
+			and e.entName like concat('%', #{key}, '%')
+		</if>
+		order by e.entName
+    </select>
+
+    <select id="dataMainCompanyList" parameterType="com.enesource.jump.web.dto.ParamDTO" resultType="map">
+        SELECT e.company_id companyId, e.entName, #{date} date from t_enterpriseinfo e
+        <if test="type != 'all' and type != null">
+            INNER JOIN t_ent_tag_rel tag ON tag.identifier = e.company_id and tag.tag_key = #{type}
+        </if>
+        where 1=1
+        <if test="areaCode != 'all' and areaCode != null ">
+            and e.areaCode = #{areaCode}
+        </if>
+        <if test="industry != 'all' and industry != null ">
+            and CONCAT(SUBSTR(e.industryType,1,3),'00') = CONCAT(#{industry},'00')
+        </if>
+        <if test="key != null and key !=''">
+            and e.entName like concat('%', #{key}, '%')
+        </if>
+        order by e.entName
+    </select>
+
+    <select id="dataMainAccList" parameterType="map" resultType="map">
+		SELECT r.company_id companyId, r.accNumber accnumber, #{date} date
+		 FROM t_ent_accnumber_rel r
+		 where r.company_id = #{companyId} and r.type = 0
+	</select>
+
+    <select id="dataMainListByMonth" parameterType="map" resultType="map">
+		SELECT ROUND(IFNULL(r.value,0),2) value, r.date
+		FROM t_ent_energyinfo r
+		where r.company_id = #{companyId} and r.energyType = 0 and r.accnumber = #{accnumber} and year(r.date) = #{date}
+		ORDER BY r.date
+	</select>
+
+    <select id="dataMainCompSumListByMonth" parameterType="map" resultType="map">
+		SELECT ROUND(SUM(IFNULL(r.value,0)),2) value, r.date
+		 FROM t_ent_energyinfo r
+		where r.company_id = #{companyId} and r.energyType = 0 and year(r.date) = #{date}
+		GROUP BY r.company_id, r.date
+		ORDER BY r.date
+	</select>
+
+    <select id="dataFuHeMainCompSumListByMonth" parameterType="map" resultType="map">
+		SELECT ROUND(SUM(IFNULL(r.value,0)),2) value, r.date
+		FROM t_ent_fuhe_info r
+		where r.company_id = #{companyId} and year(r.date) = #{date}
+		GROUP BY r.company_id, r.date
+		ORDER BY r.date
+	</select>
+
+
+    <select id="dataMainListByDay" parameterType="map" resultType="map">
+		SELECT ROUND(IFNULL(r.value,0),2) value, r.date
+		FROM t_ent_energyinfo_day r
+		where r.company_id = #{companyId}
+		and r.energyType = 0
+		and r.accnumber = #{accnumber}
+		and DATE_FORMAT(r.date,'%Y-%m') = DATE_FORMAT(#{date},'%Y-%m')
+		ORDER BY r.date
+	</select>
+
+    <select id="dataFuHeMainListByDay" parameterType="map" resultType="map">
+		SELECT ROUND(IFNULL(r.value,0),2) value, r.date
+		FROM t_ent_fuhe_info r
+		where r.company_id = #{companyId}
+		 and r.accnumber = #{accnumber}
+		 and DATE_FORMAT(r.date,'%Y-%m') = DATE_FORMAT(#{date},'%Y-%m')
+		ORDER BY r.date
+	</select>
+
+
+    <select id="dataMainCompSumListByDay" parameterType="map" resultType="map">
+		SELECT ROUND(SUM(IFNULL(r.value,0)),2) value, r.date
+		FROM t_ent_energyinfo_day r
+		where r.company_id = #{companyId} and r.energyType = 0 and DATE_FORMAT(r.date,'%Y-%m') = DATE_FORMAT(#{date},'%Y-%m')
+		GROUP BY r.company_id, r.date
+		ORDER BY r.date
+	</select>
+
+    <select id="dataFuHeMainCompSumListByDay" parameterType="map" resultType="map">
+		SELECT ROUND(SUM(IFNULL(r.value,0)),2) value, r.date
+		FROM t_ent_fuhe_info r
+		where r.company_id = #{companyId} and DATE_FORMAT(r.date,'%Y-%m') = DATE_FORMAT(#{date},'%Y-%m')
+		GROUP BY r.company_id, r.date
+		ORDER BY r.date
+	</select>
+
+    <select id="dataEntEnergyInfo" resultType="java.util.Map" parameterType="map">
+		select  IFNULL(r.value,'') value
+				,i.value day
+		  from t_time i
+		  	 left join t_ent_energyinfo r on i.value = month(r.date)
+		  where energyType = #{dataType}
+			and company_id = #{companyId}
+			and year(r.date) = #{date}
+			and i.type= '1'
+	</select>
+
+    <select id="getEntYongReInfo" resultType="java.util.Map" parameterType="map">
+		select  IFNULL(r.value,'') value
+				,i.value day
+		  from t_time i
+		  	 left join t_ent_yongre_day r on i.value = day(r.date)
+		  where company_id = #{companyId}
+			and DATE_FORMAT(r.date,'%Y-%m') = DATE_FORMAT(#{date},'%Y-%m')
+			and i.type= '2'
+	</select>
+
+
+    <select id="getEntDianFeiInfo" resultType="java.util.Map" parameterType="map">
+		select
+			 ifnull(t.value,'') value
+			,i.value month
+		from t_time i
+			left join  t_ent_dianfei_info t on i.value = month(t.date)
+		where year(t.date) = #{date}
+		    and t.company_id = #{companyId}
+		    and i.type= '1'
+	</select>
+
+    <select id="getEntFuHeInfo" resultType="java.util.Map" parameterType="map">
+		select
+			 ifnull(t.value,'') value
+			,i.value month
+			,ifnull(t.accNumber,'') accNumber
+		from t_time i
+			left join  t_ent_fuhe_info t on i.value = month(t.date)
+		where year(t.date) = #{date}
+		    and t.company_id = #{companyId}
+		    and i.type= '1'
+	</select>
+
+    <select id="getEntDianFeiInfoByImport" resultType="java.util.Map"
+            parameterType="com.enesource.jump.web.dto.ExcelDataImportDTO">
+		select   i.company_id companyId
+				,i.date
+				,i.value
+				,id
+		  from   t_ent_dianfei_info i
+		    where year(i.date) = #{date}
+	</select>
+
+    <select id="getEntFuHeByImport" resultType="java.util.Map"
+            parameterType="com.enesource.jump.web.dto.ExcelDataImportDTO">
+		select   i.company_id companyId
+				,i.date
+				,i.value
+				,id
+		  from  t_ent_fuhe_info i
+		 where year(i.date) = #{date}
+	</select>
+    <select id="getEntEnergyInfoByImport" resultType="java.util.Map"
+            parameterType="com.enesource.jump.web.dto.ExcelDataImportDTO">
+		select   i.company_id companyId
+				,i.date
+				,i.value
+				,id
+		  from  t_ent_energyinfo i
+		 where year(i.date) = #{date}
+		 	and energyType = #{dataType}
+
+	</select>
+
+    <select id="getEntYongReInfoByImport" resultType="java.util.Map"
+            parameterType="com.enesource.jump.web.dto.ExcelDataImportDTO">
+		select   i.company_id companyId
+				,i.date
+				,i.value
+				,id
+		  from  t_ent_yongre_day i
+		 where DATE_FORMAT(i.date,'%Y-%m') = DATE_FORMAT(#{date},'%Y-%m')
+	</select>
+
+    <select id="getEntEleInfoByImport" resultType="java.util.Map"
+            parameterType="com.enesource.jump.web.dto.ExcelDataImportDTO">
+		select   i.company_id companyId
+				,i.date
+				,i.value
+				,id
+				,accnumber
+				,feng
+				,jian
+				,gu
+		  from  t_ent_energyinfo_day i
+		 where DATE_FORMAT(i.date,'%Y-%m') = #{date}
+
+	</select>
+
+    <select id="getEntFuHeInfoMonthList" resultType="java.util.Map" parameterType="com.enesource.jump.web.dto.ParamDTO">
+		SELECT  t.`value`
+				,i.date
+				,f.entName
+				,#{date}
+		 FROM  t_time t
+			   , t_ent_fuhe_info i
+			   ,t_enterpriseinfo f
+		WHERE t.type = '1'
+		  and f.company_id = i.company_id
+		and t.value = MONTH(i.date)
+		and year(i.date) = #{date}
+	</select>
+
+    <select id="getEntKaiPiaoInfoByDate" resultType="java.util.Map" parameterType="map">
+		select value
+				,id
+				,update_user updateUser
+		 from t_ent_economicsinfo
+		 where  company_id = #{companyId}
+		  and date = #{date}
+	</select>
+
+    <select id="getEntEnergyInfoByDate" resultType="java.util.Map" parameterType="map">
+		 select value
+				,id
+				,update_user updateUser
+		 from t_ent_energyinfo
+		 where company_id = #{companyId}
+		  and date = #{date}
+		  and energyType = #{energyType}
+	</select>
+
+    <select id="getEleDetail" resultType="java.util.Map" parameterType="map">
+        SELECT ROUND(IFNULL(r.value/t.value,0),5) value
+        , i.value month
+        ,r.accnumber
+        ,r.entName
+        FROM t_time i
+        LEFT JOIN t_ent_energyinfo r on i.value = month(r.date) and year(r.date) = #{date}
+        ,t_config t
+        where
+        r.energyType =0
+        and t.type = 'eleEncryption'
+        and i.type= '1'
+        and r.accnumber in
+        <foreach collection="accNumberList" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ORDER BY r.company_id, r.date
+    </select>
+
+    <select id="getFuHeDetail" resultType="java.util.Map" parameterType="map">
+        SELECT ROUND(IFNULL(r.value,0),2) value
+        , i.value month
+        ,r.accNumber accnumber
+        ,r.entName
+        FROM t_time i
+        LEFT JOIN t_ent_fuhe_info r on i.value = month(r.date) and year(r.date) = #{date}
+        where i.type= '1'
+        and r.accNumber in
+        <foreach collection="accNumberList" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ORDER BY r.company_id, r.date
+    </select>
+
+    <select id="getDataReLiDetail" resultType="java.util.Map" parameterType="map">
+        SELECT ROUND(IFNULL(r.value,0),2) value
+            , i.value day
+            ,ifnull(r.entName,'') entName
+        FROM t_time i
+        LEFT JOIN t_ent_yongre_day r on i.value = day(r.date) and date_format(r.date,'%Y-%m')= date_format(#{date},'%Y-%m')
+        where i.type= '2'
+          and r.company_id in
+        <foreach collection="companyList" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ORDER BY r.company_id, r.date
+    </select>
+
+    <select id="getDataEleDayDetail" resultType="java.util.Map" parameterType="map">
+        SELECT ROUND(IFNULL(r.value/t.value,0),5) value
+        , i.value day
+        ,ifnull(r.entName,'') entName
+        ,r.accnumber
+        FROM t_time i
+        LEFT JOIN t_ent_energyinfo_day r on i.value = day(r.date) and date_format(r.date,'%Y-%m')= date_format(#{date},'%Y-%m')
+        ,t_config t
+        where i.type= '2'
+        and t.type = 'eleEncryption'
+        and r.accnumber in
+        <foreach collection="accNumberList" index="index" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        ORDER BY r.company_id, r.date
+    </select>
+
+    <select id="getEntEnergyInfo" resultType="java.util.Map" parameterType="map">
+        select value
+				,energyType
+		 from t_ent_energyinfo
+		 where company_id = #{companyId}
+		  and date = #{date}
+		  and energyType in ('1','8','6','4','3')
+    </select>
+
+
+</mapper>
